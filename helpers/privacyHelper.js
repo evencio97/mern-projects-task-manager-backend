@@ -12,6 +12,7 @@ function sessionPrivacy(data){
 }
 
 function projectPrivacy(data){
+    data.tasks= undefined;
     return data;
 }
 

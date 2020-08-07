@@ -11,18 +11,6 @@ const { projectPrivacy } = require('../helpers/privacyHelper');
 
 var forPage= 15;
 
-const userProjects = async (user) => {
-    try {
-        if (!('projects' in user && user.projects.length)) return [];
-        // Get projects user
-        let projects = await Project.find({ _id:{ $in: user.projects }, user: user._id, deleted_at: null }).exec();
-        return projects;
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-}
-
 const paginatedProjects = async (id, page=1) => {
     try {
         let aux= {total: 0, results: [], page: 1, lastPage: 1};
@@ -30,7 +18,7 @@ const paginatedProjects = async (id, page=1) => {
             [
                 { "$match": { user: id, deleted_at: null }},
                 { "$sort": { created_at: -1 } },
-                { "$project": { "user": 0 }},
+                { "$project": { "user": 0, tasks: 0 }},
                 { "$group": { '_id': null, 'total': { '$sum': 1 }, 'results': { '$push': '$$ROOT' } }},
                 { "$project": { "_id": 0, "total": 1, "results": { "$slice": ['$results', forPage*(page-1), forPage] }}}
             ]
@@ -70,6 +58,7 @@ const create = async (req, res) => {
         let aux = await User.findOneAndUpdate({ _id: session.user }, { $push:{ projects: project._id }}).exec();
         if (!aux) throw true
         // Last touches
+        project= projectPrivacy(project);
         return res.status(200).json({ result: 'Success', message: 'Project successfully created', project, error: false });
     } catch (error) {
         console.log(error);
@@ -94,7 +83,8 @@ const update = async (req, res) => {
         // Check result
         if (!project)
             return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'notFind' });
-        
+        // Last touches
+        project= projectPrivacy(project);
         return res.status(200).json({ result: 'Success', message: 'Project successfully updated', project, error: false });
     } catch (error) {
         console.log(error);
@@ -150,9 +140,9 @@ const getAll = async (req, res) => {
         let projects = await paginatedProjects(session.user, page);
         // Get tasks for projects
         for (let project of projects.results) {
-            project.tasks= await TaskController.paginatedTask(project._id);
+            // Last touches
+            project= projectPrivacy(project);
         }
-
         return res.status(200).json({ result: 'Success', message: 'Projects successfully get', projects, error: false });
     } catch (error) {
         console.log(error);
