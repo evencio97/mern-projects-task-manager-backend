@@ -26,7 +26,7 @@ router.put('/user', checkAuth,
 );
 router.delete('/user', checkAuth, userController.deleteUser);
 // Sessions
-router.get('/logout', sessionController.logout);
+router.get('/logout', checkAuth, sessionController.logout);
 router.get('/session/check', checkAuth, sessionController.check);
 // Projects
 router.get('/projects', checkAuth, projectController.getAll);

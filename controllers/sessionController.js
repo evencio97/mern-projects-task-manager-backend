@@ -3,7 +3,7 @@
 const Session = require('../models/Session');
 const User = require('../models/User');
 // Helpers
-const { sessionPrivacy } = require('../helpers/privacyHelper');
+const { userPrivacy, sessionPrivacy } = require('../helpers/privacyHelper');
 const { createToken } = require('../helpers/jwtHelper');
 
 const deactivateSession = async (token) => {
@@ -88,9 +88,12 @@ const check = async (req, res) => {
             if (!session)
                 return res.status(500).json({ result: 'Error', message: 'Faild refresh session', error: true, errorCode: 'serverError' });
         }
-
+        // Get user
+        let user= await User.findOne({ _id: session.user, deleted_at: null }).exec();
+        if (!user) throw true;
+        user= userPrivacy(user);
         return res.status(200).json({ result: 'Success', message: 'Session refresh successfully', 
-            token: session.token, error: false });
+            token: session.token, user, error: false });
     } catch (error) {
         console.log(error);
         return res.status(500).json({ result: 'Error', message: 'An error has occurred, please try again later.', 

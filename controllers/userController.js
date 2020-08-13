@@ -64,7 +64,7 @@ const login = async (req, res) => {
         // Get user
         let user = await User.findOne({ email: params.email, deleted_at: null }).exec();
         if (!user)
-            return res.status(404).json({ result: 'Error', message: "The user don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The user don't exist", error: true, errorCode: 'emailNotFind' });
         // Check password 
         if (!await bcrypt.compare(params.password, user.password))
             return res.status(403).json({ result: 'Error', message: 'The password is incorrect', error: true, errorCode: 'badPassword' });

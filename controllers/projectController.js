@@ -56,7 +56,7 @@ const create = async (req, res) => {
         if (!project) throw true
         // Add project to user
         let aux = await User.findOneAndUpdate({ _id: session.user }, { $push:{ projects: project._id }}).exec();
-        if (!aux) throw true
+        if (!aux) throw true;
         // Last touches
         project= projectPrivacy(project);
         return res.status(200).json({ result: 'Success', message: 'Project successfully created', project, error: false });
@@ -82,7 +82,7 @@ const update = async (req, res) => {
             { $set: { name: params.name } }, { new: true }).exec();
         // Check result
         if (!project)
-            return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'projectNotFind' });
         // Last touches
         project= projectPrivacy(project);
         return res.status(200).json({ result: 'Success', message: 'Project successfully updated', project, error: false });
@@ -101,7 +101,7 @@ const deleteProject = async (req, res) => {
         let project = await Project.findOneAndUpdate({ _id: id, user: session.user, deleted_at: null }, 
             { $set: { tasks: [], deleted_at: Date.now() }}).exec();
         if (!project)
-            return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'projectNotFind' });
         // Delete tasks
         await Task.deleteMany({ project: project._id }).exec();
         
@@ -120,7 +120,7 @@ const get = async (req, res) => {
         // Get project
         let project = await Project.findOne({ _id: id, user: session.user, deleted_at: null }).exec();
         if (!project)
-        return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'notFind' });
+        return res.status(404).json({ result: 'Error', message: "The project don't exist", error: true, errorCode: 'projectNotFind' });
         // Get tasks
         project= project.toObject();
         project.tasks= await TaskController.paginatedTask(project._id);
@@ -152,7 +152,7 @@ const getAll = async (req, res) => {
 }
 
 module.exports = {
-    userProjects,
+    paginatedProjects,
     create,
     update,
     deleteProject,

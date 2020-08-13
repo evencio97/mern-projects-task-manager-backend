@@ -4,6 +4,7 @@ function userPrivacy(data){
     data.password= undefined;
     data.sessions= undefined;
     data.session= undefined;
+    data.projects= undefined;
     return data;
 }
 

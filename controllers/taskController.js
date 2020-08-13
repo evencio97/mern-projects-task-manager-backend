@@ -40,7 +40,7 @@ const create = async (req, res) => {
         // Check if project exist
         let project= await Project.findOne({ _id: proId, user: session.user, deleted_at: null }).exec()
         if (!project)
-            return res.status(404).json({ result: 'Error', message: 'The project not exist', error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: 'The project not exist', error: true, errorCode: 'projectNotFind' });
         
         let task = new Task({
             project: project._id,
@@ -83,7 +83,7 @@ const update = async (req, res) => {
             { $set: data}, { new: true }).exec();
         // Check result
         if (!task)
-            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'taskNotFind' });
         
         return res.status(200).json({ result: 'Success', message: 'Task successfully updated', task, 
             error: errors.length? true:false, errors });
@@ -102,7 +102,7 @@ const deleteTask = async (req, res) => {
         // Delete task
         let task = await Task.findOneAndDelete({ _id: id, project: proId, deleted_at: null }).exec();
         if (!task)
-            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'taskNotFind' });
         // Pull task from project
         let project = await Project.findOneAndUpdate({ _id: proId, user: session.user, deleted_at: null }, 
             { $pull: { tasks: mongoose.Types.ObjectId(id) }}, { multi: true, new: true }).exec();
@@ -124,7 +124,7 @@ const get = async (req, res) => {
         // Get task
         let task = await Task.findOne({ _id: id, project: proId, deleted_at: null }).exec();
         if (!task)
-            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'notFind' });
+            return res.status(404).json({ result: 'Error', message: "The task don't exist", error: true, errorCode: 'taskNotFind' });
         
         return res.status(200).json({ result: 'Success', message: 'Task successfully get', task, error: false });
     } catch (error) {
